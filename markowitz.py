@@ -5,7 +5,12 @@ import matplotlib.pyplot as plt
 import scipy.optimize as optimze
 from datetime import date
 
-stocks = ['AAPL','WMT','TSLA','GE','AMZN','DB']
+n = int(input('Enter no. of stocks to be added in portfolio  '))
+stocks = []
+for st in range(n):
+    st = input("Enter stock exact name ")
+    stocks.append(st)
+#stocks = ['AAPL','WMT','TSLA','GE','AMZN','DB']
 startdate = date(2010,1,1)
 enddate = date(2022,12,7)
 #average no. of trading days in a year
@@ -42,8 +47,9 @@ def show_calculate_date(log_return):
 def statistics(rt):
     #instead of daily returns it will focus on annual returns
     #mean of annual returns
-    print("Mean annual return is \n",rt.mean() * trading_days)
-    print("Covariance of annual return is \n",rt.cov() * trading_days)
+    #print("Mean annual return is \n",rt.mean() * trading_days)
+    #print("Covariance of annual return is \n",rt.cov() * trading_days)
+    print("this is statitics block")
 
 def mean_variance(rt,wt):
     portfolio_return = np.sum(rt.mean()*wt) * trading_days
@@ -59,7 +65,7 @@ def generate_portfolio(rt):
         w = np.random.random(len(stocks))
         w /= np.sum(w)
         portfolio_weights.append(w)
-        portfolio_means.append(np.sum(rt.mean() * w ) * trading_days)
+        portfolio_means.append(np.sum(rt.mean() * w) * trading_days)
         portfolio_risk.append(np.sqrt(np.dot(w.T,np.dot(rt.cov() * trading_days,w))))
     return np.array(portfolio_weights) , np.array(portfolio_means), np.array(portfolio_risk)
 
@@ -79,13 +85,13 @@ def sharpe(wt,rt):
     return -stat_with_weight(wt,rt)[2]
 
 def optimize_portfolio(wt,rt):
-    constraints = {'type':'eq','fun':lambda x:np.sum(x)-1}
+    constraints = ({'type':'eq','fun':lambda x: np.sum(x) - 1})
     bounds = tuple((0,1) for g in range(len(stocks)))
-    optimze.minimize(fun=sharpe,x0=weight[0],args=rt,method='SLSQP',bounds=bounds,constraints=constraints)
+    return optimze.minimize(fun=sharpe,x0=weight[0],args=rt,method='SLSQP',bounds=bounds,constraints=constraints)
 
 def print_optimum_portfolio(opt,rt):
-    print(opt['x'],round(3))
-    statistics(stat_with_weight(opt['x'],round(3),rt))
+    print("optimal portfolio\n",opt['x'].round(3))
+    print("expected return,volatility,sharpe ratio \n",stat_with_weight(opt['x'].round(3),rt))
 
 def show_optimum_portfolio(opt,rets,rt,vt):
     plt.scatter(vt,rt,c=rt/vt,marker='*')
@@ -101,19 +107,21 @@ def show_optimum_portfolio(opt,rets,rt,vt):
 
 
 #download_data()
-print("\n\n\n\n\n")
+print("\n\n")
 dataset = download_data()
 show_data(dataset)
-print("\n\n\n\n\n")
+print("\n\n")
 calculate_data(dataset)
-print("\n\n\n\n\n")
+print("\n\n")
 log_data = calculate_data(dataset)
-print("\n\n\n\n\n")
+print("\n\n")
 show_calculate_date(log_data)
-print("\n\n\n\n\n")
-statistics(log_data)
-print("\n\n\n\n")
+print("\n\n")
+#statistics(log_data)
+print("\n\n")
 weight,mean,risk = generate_portfolio(log_data)
 show_portfolio(mean,risk)
 optimum = optimize_portfolio(weight,log_data)
+#print_optimal_portfolio(optimum, log_daily_returns)
 show_optimum_portfolio(optimum,log_data,mean,risk)
+print_optimum_portfolio(optimum, log_data)
